@@ -1,0 +1,3 @@
+large_text = '{song}'
+details = '{status} {song}'
+state = 'By {artist} on {album}'
