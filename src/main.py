@@ -12,7 +12,6 @@ import rumps
 from config import Config
 from rpc import rp_updater
 from utils import ostype, path
-
 # Load configuration
 config = Config()
 

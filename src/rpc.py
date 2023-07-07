@@ -9,6 +9,8 @@ import pypresence.exceptions
 
 from config import Config
 from utils import get_cover_art_url, log, ostype, path
+from get_apple_music_link import GetAppleMusicLink
+from server import Server
 
 config = Config()
 
@@ -33,15 +35,21 @@ def get_music_info():
         script_loc = os.path.join(path, "scripts", "getmusicinfo.applescript")
 
     p = subprocess.Popen(["osascript", script_loc], stdout=subprocess.PIPE)
-
-    return p.stdout.read().decode("utf-8").strip().split("\\")
-
+    info = p.stdout.read().decode("utf-8").strip().split("\\")
+    print(info)
+    if info[0] == "STOPPED":
+        # try apple music on phone
+        server = Server()
+        server.run()
+        info = server.load_current_song().split("/")
+        print(info)
+    return info
 
 def get_rp(info, statuses):
     """Get additional Rich Presence data"""
     # .split(',')[0] is an attempt to fix issue #5
     elapsed = int(float(info[4].split(",")[0].strip()))
-
+    apple_music_links = GetAppleMusicLink(info[2], info[1])
     formatting_args = {
         "status": "PLAYING" if info[0] == "PLAYING" else "Paused",
         "state": info[0],
@@ -58,8 +66,8 @@ def get_rp(info, statuses):
     status["state"] = statuses["state"].format(**formatting_args)
     status["buttons"] = [
         {
-            "label": "Open Link",
-            "url": "https://your-website-url.com/"  # Replace with the actual URL
+            "label": "Open Song on Apple Music",
+            "url": apple_music_links.links[0]  # Replace with the actual URL
         }
     ]
     status["small_image"] = (
